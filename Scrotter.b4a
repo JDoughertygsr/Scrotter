@@ -1,0 +1,848 @@
+﻿Version=2.71
+IconFile=
+NumberOfModules=1
+Module1=StateManager
+ModuleVisible1=1
+Package=com.yttrium.scrotter
+DoNotOverwriteManifest=False
+ManifestCode='This code will be applied to the manifest file during compilation.~\n~'You do not need to modify it in most cases.~\n~'See this link for for more information: http://www.basic4ppc.com/forum/showthread.php?p=78136~\n~AddManifestText(~\n~<uses-sdk android:minSdkVersion="8" android:targetSdkVersion="15"/>~\n~<supports-screens android:largeScreens="true" ~\n~    android:normalScreens="true" ~\n~    android:smallScreens="true"~\n~	android:hardwareAccelerated="true"~\n~    android:anyDensity="true"/>)~\n~AddPermission(android.permission.READ_EXTERNAL_STORAGE)~\n~AddPermission(android.permission.WRITE_EXTERNAL_STORAGE)~\n~AddActivityText(Main, ~\n~<intent-filter>~\n~    <action android:name="android.intent.action.SEND" />~\n~	<category android:name="android.intent.category.DEFAULT" />~\n~    <data android:mimeType="image/*" />~\n~</intent-filter>)~\n~SetApplicationAttribute(android:icon, "@drawable/icon")~\n~SetApplicationAttribute(android:label, "$LABEL$")~\n~SetApplicationAttribute(android:theme, "@android:style/Theme.Holo.Light")~\n~SetApplicationAttribute(android:largeHeap,"true")~\n~AddApplicationText(<activity android:name="anywheresoftware.b4a.objects.preferenceactivity"/>)~\n~AddApplicationText(<meta-data android:name="com.google.android.backup.api_key" android:value="AEdPqrEAAAAIez0WOCFFG_Fq3wWHPsHrFVqUb3ubbiEZ0ySG5w" />)
+UserTypesHint=PanelInfo
+NumberOfFiles=4
+File1=about.bal
+File2=Main.bal
+File3=Options.bal
+File4=Preview.bal
+NumberOfLibraries=10
+Library1=abextdrawing
+Library2=ahpreferenceactivity
+Library3=ahviewpager
+Library4=core
+Library5=licensing
+Library6=phone
+Library7=randomaccessfile
+Library8=reflection
+Library9=sql
+Library10=threading
+@EndOfDesignText@
+#Region  Project Attributes 
+	#ApplicationLabel: Scrotter
+	#VersionCode: 05
+	#VersionName: 1.4
+	#SupportedOrientations: portrait
+	#CanInstallToExternalStorage: True
+#End Region
+
+#Region  Activity Attributes 
+	#FullScreen: False
+	#IncludeTitle: False
+#End Region
+
+Sub Process_Globals
+	'These global variables will be declared once when the application starts.
+	'These variables can be accessed from all modules.
+	Dim TYPE_ABOUT As Int : TYPE_ABOUT = 1
+	Dim TYPE_PREVIEW As Int : TYPE_PREVIEW = 2
+	Dim TYPE_OPTIONS As Int : TYPE_OPTIONS = 3
+	Dim FILL_PARENT As Int : FILL_PARENT = -1
+	Dim WRAP_CONTENT As Int : WRAP_CONTENT = -2
+	Type PanelInfo (PanelType As Int, LayoutLoaded As Boolean) 
+	Dim CurrentPage As Int = 1
+	Dim version As String = "1.4"
+	Dim releasedate As String = "9/27/2013"
+	Dim theme As String
+	Dim Loaded(4) As Boolean
+	Dim PrefScreen As AHPreferenceScreen
+	Dim PrefManager As AHPreferenceManager
+	Dim publicKey As String = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiWpDfRB3l6X23cYlTK9mh7dwBtFjDhsteYZd+po2hvMjD9gfIzrqsMxzxTPL+9Oh1kWc27kmVJt+XkfpcvZIh7x9lrz8Hx33EDfQRQ5SULveFnsXX68H8GR4YJxuHvTtWkILLUDo1TpS3sMc+bi88sDk0ShU01ocFIDTMG3CFdPuqFMIYb5SA2sypQD4Z7SLA5gyNLGZ1s910LgPuGli1JOud0TazEOqVLekIPhsEMmWma7ANPzmX75u1aqGjUAbIAn5jl9rgQoFiNLb/gyEfpJyFxtCNKjVr1WdJ5UhzbIDyFmbjqPQ3OixWXanhk2szwpzeEbEXfSMdsV54MA3kQIDAQAB"
+	Dim test_1 As String
+	Dim DeveloperVersion As Boolean = False
+End Sub
+
+Sub Globals
+	'These global variables will be redeclared each time the activity is created.
+	'These variables can only be accessed from this module.
+	Dim aboutpage, optionspage, previewpage As Panel
+	Dim container As AHPageContainer
+	Dim pager As AHViewPager
+	Dim tabs As AHViewPagerTabs
+	Dim GlossCheckbox As CheckBox
+	Dim ModelBox As Spinner
+	Dim ShadowCheckbox As CheckBox
+	Dim StretchCheckbox As CheckBox
+	Dim UnderShadowCheckbox As CheckBox
+	Dim VariantBox As Spinner
+	Dim TabSwitcher As TabHost
+	Dim Loading As ProgressBar
+	Dim Loadbtn As Button
+	Dim SaveBtn As Button
+	Dim Preview As Panel
+	Dim LoadedImage As Bitmap
+	'Public Shared OpenPath(7), SavePath As String
+    'Public OpenStream As Stream = Nothing
+    'Public SaveStream As Stream = Nothing
+    'Public PhoneStream As Stream = Nothing
+    'Public SaveImg As Image
+    'Public CanvImg(7) As Image
+    'Public Image2 As New Bitmap(720, 1280)
+    'Public Shared IsMono As Boolean
+    'Public ReadOnly Version As String = "0.8"
+    'Public ReadOnly ReleaseDate As String = "2013-02-12"
+    'Private Image(7) As String
+	Dim BackgroundThread As Thread
+	Dim PreviewImage As Bitmap
+	Dim Waiting As Boolean = False
+	Dim cc As ContentChooser
+	Dim Ringtone As RingtoneManager
+	Dim ScrotterTitle As Label
+	Dim IconView As ImageView
+	Dim ScrotterVers As Label
+	Dim themebtn As Button
+	Dim FinalBitmap As Bitmap
+	Dim savedphone, savedvariant As String
+	Dim savephone As String = "False"
+	Dim themelist As List = Array As String("Dark", "Light")
+	Dim devicelist As List = Array As String("Google Nexus 4", "Google Nexus 7", "Google Nexus S", "HTC Desire HD, HTC Inspire 4G", "HTC One", "HTC One S", "HTC One V", "HTC One X, HTC One X+", "Motorola Droid RAZR", "Motorola Droid RAZR M", "Motorola Xoom", "Samsung Galaxy Note II", "Samsung Galaxy Player 5.0", "Samsung Galaxy SII, Epic 4G Touch", "Samsung Galaxy SIII", "Samsung Galaxy SIII Mini", "Samsung Galaxy SIV", "Samsung Google Galaxy Nexus")
+	Dim UbuntuRegular As Typeface = Typeface.LoadFromAssets("ubuntureg.ttf")
+	Dim UbuntuLight As Typeface = Typeface.LoadFromAssets("ubuntulight.ttf")
+	Dim SettingsBtn As Button
+	Dim SettingsIcon As ImageView
+End Sub
+
+Sub Activity_Create(FirstTime As Boolean)
+	'Msgbox("This version of Scrotter is a developer preview. Bugs WILL arise and should be reported. Do not treat this version as final!", "Warning")
+	Dim lc As LicenseChecker
+    Dim p As PhoneId
+	Dim Licensed As Boolean = StateManager.GetSetting2("Licensed", False)
+	If Licensed = False Then
+    	lc.Initialize("lc", p.GetDeviceId, publicKey, "kljdflkf".GetBytes("UTF8"))
+    	lc.SetVariableAndValue("test_1", "YouSneakyFuck")
+    	lc.CheckAccess
+	End If
+    If FirstTime Then
+        CreatePreferenceScreen
+        If PrefManager.GetAll.Size = 0 Then SetDefaults
+    End If
+	theme = StateManager.GetSetting2("theme", "Light")
+	savedphone = StateManager.GetSetting2("savedphone", "")
+	savedvariant = StateManager.GetSetting2("savedvariant", "")
+	savephone = StateManager.GetSetting2("savephone", "False")
+	
+	container.Initialize
+	aboutpage = CreatePanel(TYPE_ABOUT, "About")
+	container.AddPage(aboutpage, "About")
+	previewpage = CreatePanel(TYPE_PREVIEW, "Preview")
+	container.AddPage(previewpage,"Preview")
+	optionspage = CreatePanel(TYPE_OPTIONS, "Options")
+	container.AddPage(optionspage,"Options")
+	pager.Initialize(container, "Pager")
+	tabs.Initialize(pager)
+	tabs.LineHeight = 5dip
+	tabs.UpperCaseTitle = True
+	Activity.AddView(tabs, 0, 0, FILL_PARENT, WRAP_CONTENT)
+	Activity.AddView(pager, 0, 29dip, Activity.Width, Activity.Height-29dip)
+	BackgroundThread.Initialise("ImageThread")
+	cc.Initialize("cc")
+'	Select theme
+'		Case "Light"
+			tabs.Color = Colors.White
+			tabs.BackgroundColorPressed = Colors.DarkGray
+			tabs.LineColorCenter = Colors.DarkGray
+			tabs.TextColor = Colors.LightGray
+			tabs.TextColorCenter = Colors.DarkGray
+			tabs.Invalidate
+'		Case "Dark"
+'			tabs.Color = Colors.RGB(50, 50, 50)
+'			tabs.BackgroundColorPressed = Colors.White
+'			tabs.LineColorCenter = Colors.LightGray
+'			tabs.TextColor = Colors.Gray
+'			tabs.TextColorCenter = Colors.LightGray
+'			tabs.Invalidate
+'	End Select
+End Sub
+
+Sub lc_Allow
+    Log("Allow")
+    StateManager.SetSetting("Licensed", True)
+    StateManager.SaveSettings
+End Sub
+Sub lc_DontAllow
+	If DeveloperVersion = True Then
+		Log("DevPassAllow")
+		StateManager.SetSetting("Licensed", False)
+    	StateManager.SaveSettings
+	Else
+	    Log("DontAllow")
+    	StateManager.SetSetting("Licensed", False)
+    	StateManager.SaveSettings
+    	ToastMessageShow("Closing application.", True)
+    	Activity.Finish
+	End If
+End Sub
+Sub lc_Error (ErrorCode As String)
+    Log("error: " & ErrorCode)
+    ToastMessageShow("Closing application.", True)
+    Activity.Finish
+End Sub
+
+
+Sub SetDefaults
+    'defaults are only set on the first run.
+    PrefManager.SetBoolean("check1", True)
+    PrefManager.SetBoolean("check2", False)
+    PrefManager.SetString("edit1", "Hello!")
+    PrefManager.SetString("list1", "Black")
+End Sub
+
+Sub RefreshTheme
+'	Select theme
+'		Case "Light"
+			tabs.Color = Colors.White
+			tabs.BackgroundColorPressed = Colors.DarkGray
+			tabs.LineColorCenter = Colors.DarkGray
+			tabs.TextColor = Colors.LightGray
+			tabs.TextColorCenter = Colors.DarkGray
+			tabs.Invalidate
+			If Loaded(1) = True Then
+				aboutpage.Color = Colors.White
+				ScrotterTitle.TextColor = Colors.DarkGray
+				ScrotterVers.TextColor = Colors.Gray
+				SettingsBtn.TextColor = Colors.DarkGray
+			End If
+			If Loaded(2) = True Then previewpage.Color = Colors.White
+			If Loaded(3) = True Then
+				optionspage.Color = Colors.White
+				ModelBox.TextColor = Colors.DarkGray
+				VariantBox.TextColor = Colors.DarkGray
+				GlossCheckbox.TextColor = Colors.DarkGray
+				ShadowCheckbox.TextColor = Colors.DarkGray
+				UnderShadowCheckbox.TextColor = Colors.DarkGray
+				Dim y As Int = ModelBox.SelectedIndex
+				ModelBox.Clear
+				ModelBox.AddAll(devicelist)
+				ModelBox.SelectedIndex = y
+				If VariantBox.Size > 0 Then
+					y = VariantBox.SelectedIndex
+					Dim z As List
+					z.Initialize
+					For count = 0 To VariantBox.Size - 1
+						z.Add(VariantBox.GetItem(count))
+					Next
+					VariantBox.Clear
+					VariantBox.AddAll(z)
+					VariantBox.SelectedIndex = y
+				End If
+			End If
+'		Case "Dark"
+'			tabs.Color = Colors.RGB(50, 50, 50)
+'			tabs.BackgroundColorPressed = Colors.White
+'			tabs.LineColorCenter = Colors.LightGray
+'			tabs.TextColor = Colors.Gray
+'			tabs.TextColorCenter = Colors.LightGray
+'			tabs.Invalidate
+'			If Loaded(1) = True Then
+'				aboutpage.Color = Colors.RGB(50, 50, 50)
+'				ScrotterTitle.TextColor = Colors.LightGray
+'				ScrotterVers.TextColor = Colors.Gray
+'				SettingsBtn.TextColor = Colors.LightGray
+'			End If
+'			If Loaded(2) = True Then  previewpage.Color = Colors.RGB(50, 50, 50)
+'			If Loaded(3) = True Then
+'				optionspage.Color = Colors.RGB(50, 50, 50)
+'				ModelBox.TextColor = Colors.LightGray
+'				VariantBox.TextColor = Colors.LightGray
+'				GlossCheckbox.TextColor = Colors.LightGray
+'				ShadowCheckbox.TextColor = Colors.LightGray
+'				UnderShadowCheckbox.TextColor = Colors.LightGray
+'				Dim y As Int = ModelBox.SelectedIndex
+'				ModelBox.Clear
+'				ModelBox.AddAll(devicelist)
+'				ModelBox.SelectedIndex = y
+'				If VariantBox.Size > 0 Then
+'					y = VariantBox.SelectedIndex
+'					Dim z As List
+'					z.Initialize
+'					For count = 0 To VariantBox.Size - 1
+'						z.Add(VariantBox.GetItem(count))
+'					Next
+'					VariantBox.Clear
+'					VariantBox.AddAll(z)
+'					VariantBox.SelectedIndex = y
+'				End If
+'			End If
+'	End Select
+	ScrotterTitle.Typeface = UbuntuRegular
+	ScrotterVers.Typeface = UbuntuRegular
+	Loadbtn.Typeface = UbuntuRegular
+	SaveBtn.Typeface = UbuntuRegular
+	GlossCheckbox.Typeface = UbuntuRegular
+	ShadowCheckbox.Typeface = UbuntuRegular
+	UnderShadowCheckbox.Typeface = UbuntuRegular
+End Sub
+
+Sub CC_Result (Success As Boolean, Dir As String, FileName As String)
+	If Success = True Then
+		LoadedImage.Initialize3(LoadBitmap(Ringtone.GetContentDir, FileName))
+		ImageProcess
+	End If
+End Sub
+
+Sub Activity_Resume
+	pager.GotoPage(CurrentPage, False)
+	Activity.RerunDesignerScript("About", pager.Width, pager.Height)
+	Activity.RerunDesignerScript("Preview", pager.Width, pager.Height)
+	Activity.RerunDesignerScript("Options", pager.Width, pager.Height)
+	Dim In As Intent
+    In = Activity.GetStartingIntent
+    If In.ExtrasToString.Contains("no extras") Then
+               'No Data
+    Else
+		Log(In.ExtrasToString)
+		Dim UriString As String
+		UriString = In.ExtrasToString
+		UriString = UriString.SubString2(UriString.IndexOf("STREAM=")+7,UriString.IndexOf("}"))
+		If UriString.Contains(",") Then
+			UriString = UriString.SubString2(0,UriString.IndexOf(","))
+		End If
+		Log(UriString)
+		LoadedImage.Initialize3(LoadBitmap(Ringtone.GetContentDir, UriString))
+		Preview.SetBackgroundImage(ResizeImage(LoadedImage, Preview.Width, Preview.Height))
+		pager.GotoPage(1, False)
+    End If
+	ScrotterTitle.Typeface = UbuntuRegular
+	ScrotterVers.Typeface = UbuntuRegular
+	Loadbtn.Typeface = UbuntuRegular
+	SaveBtn.Typeface = UbuntuRegular
+	GlossCheckbox.Typeface = UbuntuRegular
+	ShadowCheckbox.Typeface = UbuntuRegular
+	UnderShadowCheckbox.Typeface = UbuntuRegular
+	theme = PrefManager.GetString("theme")
+	StateManager.SetSetting("theme", theme)
+	RefreshTheme
+	If PrefManager.GetBoolean("retaindevice") = True Then savephone = "True" Else savephone = "False"
+	StateManager.SetSetting("savephone", savephone)
+	If savephone = "True" Then
+		For x = 0 To ModelBox.Size - 1
+			If ModelBox.GetItem(x) = savedphone Then ModelBox.SelectedIndex = x
+		Next
+	End If
+	StateManager.SetSetting("savedphone", savedphone)
+	StateManager.SetSetting("savedvariant", savedvariant)
+	ModelBox_itemClick(0, "")
+End Sub
+
+Sub Activity_Pause (UserClosed As Boolean)
+	CurrentPage = pager.CurrentPage
+	StateManager.SaveSettings
+End Sub
+
+Sub CreatePanel(PanelType As Int, Title As String) As Panel
+	Dim pan As Panel
+	Dim pi As PanelInfo
+	pi.Initialize
+	pi.LayoutLoaded = False
+	pi.PanelType = PanelType
+	pan.Initialize("")
+	pan.Tag = pi
+	Return pan
+End Sub
+
+Sub Pager_PageCreated (Position As Int, Page As Object)
+	Log ("Page created " & Position)
+	Dim pan As Panel
+	Dim pi As PanelInfo
+	pan = Page
+	pi = pan.Tag
+	Select pi.PanelType
+		Case TYPE_ABOUT
+			If Not(pi.LayoutLoaded) Then
+				pan.LoadLayout("About")
+				pi.LayoutLoaded = True
+				ScrotterTitle.Text = "Scrotter"
+				ScrotterTitle.TextSize = ScrotterTitle.Height * 800/1000dip
+				ScrotterVers.Text = "v" & version & " (" & releasedate & ")"
+				ScrotterVers.TextSize = ScrotterVers.Height * 500/1000dip
+'				Select theme
+'					Case "Light"
+						aboutpage.Color = Colors.White
+						ScrotterTitle.TextColor = Colors.DarkGray
+						ScrotterVers.TextColor = Colors.Gray
+'					Case "Dark"
+'						aboutpage.Color = Colors.RGB(50, 50, 50)
+'						ScrotterTitle.TextColor = Colors.LightGray
+'						ScrotterVers.TextColor = Colors.Gray
+'				End Select
+				'OptionsScrollView.Panel.AddView(RememberPhone, 15%x, 20dip, 70%x, 50dip)
+				'OptionsScrollView.Panel.AddView(ThemeLabel, 15%x, 
+			End If
+			Loaded(1) = True
+		Case TYPE_PREVIEW
+			If Not(pi.LayoutLoaded) Then
+				pan.LoadLayout("Preview")
+				pi.LayoutLoaded = True
+'				Select theme
+'					Case "Light"
+						previewpage.Color = Colors.White
+'					Case "Dark"
+'						previewpage.Color = Colors.RGB(50, 50, 50)
+'				End Select
+			End If
+			Loaded(2) = True
+		Case TYPE_OPTIONS
+			If Not(pi.LayoutLoaded) Then
+				pan.LoadLayout("Options")
+				pi.LayoutLoaded = True
+				ModelBox.AddAll(devicelist)
+				VariantBox.Add("No variants available")
+				ModelBox.Prompt = "Pick your phone"
+'				Select theme
+'					Case "Light"
+						optionspage.Color = Colors.White
+						ModelBox.TextColor = Colors.DarkGray
+						VariantBox.TextColor = Colors.DarkGray
+						GlossCheckbox.TextColor = Colors.DarkGray
+						ShadowCheckbox.TextColor = Colors.DarkGray
+						UnderShadowCheckbox.TextColor = Colors.DarkGray
+'					Case "Dark"
+'						optionspage.Color = Colors.RGB(50, 50, 50)
+'						ModelBox.TextColor = Colors.LightGray
+'						VariantBox.TextColor = Colors.LightGray
+'						GlossCheckbox.TextColor = Colors.LightGray
+'						ShadowCheckbox.TextColor = Colors.LightGray
+'						UnderShadowCheckbox.TextColor = Colors.LightGray
+'				End Select
+				ModelBox.Invalidate
+				VariantBox.Invalidate
+			End If
+			Loaded(3) = True
+	End Select		
+End Sub
+
+Sub Pager_PageChanged (Position As Int)
+	CurrentPage = pager.CurrentPage
+	StateManager.SetSetting("CurrentPage", CurrentPage)
+End Sub
+
+Sub VariantSet (var As List)
+	If VariantBox.Enabled = False Then VariantBox.Enabled = True
+	VariantBox.Clear
+	VariantBox.AddAll(var)
+End Sub
+
+Sub ModelBox_itemClick (Position As Int, Value As Object)
+	If savephone = "True" Then
+		savedphone = ModelBox.SelectedItem
+		savedvariant = VariantBox.SelectedItem
+	End If
+	VariantBox.Clear
+	VariantBox.Add("No variants available")
+	VariantBox.Enabled = False
+	ShadowCheckbox.Enabled = True
+	UnderShadowCheckbox.Enabled = False
+	UnderShadowCheckbox.Checked = False
+	GlossCheckbox.Enabled = False
+	GlossCheckbox.Checked = False
+	Select Case ModelBox.SelectedItem
+		Case "HTC One X, HTC One X+", "HTC One"
+			VariantSet(Array As String("White", "Black"))
+			GlossCheckbox.Enabled = True
+		Case "Samsung Galaxy SIV"
+			VariantSet(Array As String("White", "Blue"))
+		Case "Samsung Galaxy Note II"
+			VariantSet(Array As String("White", "Gray"))
+			GlossCheckbox.Checked = True
+		Case "Samsung Galaxy SIII"
+			VariantSet(Array As String("Blue", "White", "Black", "Red", "Brown"))
+			GlossCheckbox.Enabled = True
+		Case "Motorola Xoom", "Google Nexus 7"
+			GlossCheckbox.Enabled = True
+			UnderShadowCheckbox.Enabled = True
+			VariantSet(Array As String("Portrait", "Landscape"))
+		Case "Samsung Galaxy SII, Epic 4G Touch"
+			GlossCheckbox.Enabled = True
+			UnderShadowCheckbox.Enabled = True
+			VariantSet(Array As String("Galaxy SII", "Epic 4G Touch", "Galaxy SII (T-Mobile)"))
+		Case "Samsung Galaxy SIII Mini"
+			GlossCheckbox.Enabled = False
+			UnderShadowCheckbox.Enabled = False
+			GlossCheckbox.Checked = True
+			UnderShadowCheckbox.Checked = True
+		Case "Motorola Xoom", "Samsung Google Galaxy Nexus"
+			GlossCheckbox.Enabled = True
+			UnderShadowCheckbox.Enabled = True
+		Case "Google Nexus 4", "Google Nexus S", "HTC One S", "HTC One V"
+			GlossCheckbox.Enabled = True
+		Case "HTC Desire HD, HTC Inspire 4G"
+			GlossCheckbox.Checked = True
+			UnderShadowCheckbox.Enabled = True
+		Case "Motorola Droid RAZR", "Motorola Droid RAZR M"
+	End Select
+	If savephone = "True" AND VariantBox.Size > 0 Then
+		For x = 0 To VariantBox.Size - 1
+			If VariantBox.GetItem(x) = savedvariant Then VariantBox.SelectedIndex = x
+		Next
+	End If
+	StateManager.SetSetting("savedvariant", savedvariant)
+	RefreshImage
+End Sub
+
+Sub RefreshImage
+	Loading.Visible = True
+	If BackgroundThread.Running = True Then
+		BackgroundThread.Interrupt
+	End If
+	BackgroundThread.Start(Me, "ImageProcess", Null)
+	pager.PagingEnabled = False
+	Loadbtn.Enabled = True
+	SaveBtn.Enabled = True
+End Sub
+
+Sub SaveBtn_Click
+	If DeveloperVersion = True Then
+		Msgbox("Saving disabled in developer previews.", "Sorry!")
+	Else
+		DateTime.DateFormat = "yyyyMMdd_HHmmss"
+		Dim result As Int
+		result = Msgbox2("Save file as what format?", "Save Image", "PNG", "Cancel", "JPG", Null)
+		Select Case result
+			Case DialogResponse.POSITIVE
+				Dim filename As String = "Scrotter4A_" & DateTime.Date(DateTime.now) & ".png"
+				If File.Exists(File.Combine(File.DirRootExternal, "Scrotter/"), "") = False Then File.MakeDir(File.DirRootExternal, "Scrotter/")
+				Dim Out As OutputStream
+				Out = File.OpenOutput(File.Combine(File.DirRootExternal, "Scrotter/"), filename, False)
+				FinalBitmap.WriteToStream(Out, 100, "PNG")
+				Out.Flush
+				Out.Close
+				ToastMessageShow ("File saved to the sdcard at /sdcard/Scrotter/" & filename & ".", True)
+			Case DialogResponse.NEGATIVE
+				Dim filename As String = "Scrotter4A_" & DateTime.Date(DateTime.now) & ".jpg"
+				If File.Exists(File.Combine(File.DirRootExternal, "Scrotter/"), "") = False Then File.MakeDir(File.DirRootExternal, "Scrotter/")
+				Dim Out As OutputStream
+				Out = File.OpenOutput(File.Combine(File.DirRootExternal, "Scrotter/"), filename, False)
+				FinalBitmap.WriteToStream(Out, 95, "JPEG")
+				Out.Flush
+				Out.Close
+				ToastMessageShow ("File saved to the sdcard at /sdcard/Scrotter/" & filename & ".", True)
+		End Select
+	End If
+End Sub
+
+Sub Loadbtn_Click
+	Try
+		cc.Show("image/*", "")
+	Catch
+	End Try
+End Sub
+
+Sub ImageProcess
+	Dim Device As Bitmap
+	Dim WorkingCanvas As Canvas
+	Dim WorkingBitmap As Bitmap
+	Dim Gloss As Bitmap
+	Dim Shadow As Bitmap
+	Dim Undershadow As Bitmap
+	Dim IndexH As Int
+	Dim IndexW As Int
+	Dim ExtDraw As ABExtDrawing
+	Dim Paint As ABPaint
+	Dim r480800 As String = "480x800.png"
+	Dim r540960 As String = "540x960.png"
+	Dim r7201280 As String = "720x1280.png"
+	Dim r7681280 As String = "768x1280.png"
+	Dim r8001280 As String = "800x1280.png"
+	Dim r1280800 As String = "1280x800.png"
+	Dim r10801920 As String = "1080x1920.png"
+	Select Case ModelBox.SelectedItem
+		Case "Samsung Galaxy SIII Mini"
+            Device.Initialize(File.DirAssets, "device/" & "samsunggsiiimini.png")
+            Shadow.Initialize(File.DirAssets, "shadow/" & r480800)
+            IndexW = 78
+            IndexH = 182
+        Case "HTC Desire HD, HTC Inspire 4G"
+            Device.Initialize(File.DirAssets, "device/" & "desirehd.png")
+            Shadow.Initialize(File.DirAssets, "shadow/" & r480800)
+			Undershadow.Initialize(File.DirAssets, "undershadow/" & "desirehd.png")
+            IndexW = 86
+            IndexH = 130
+        Case "HTC One X, HTC One X+"
+            If VariantBox.SelectedItem = "Black" Then
+                Device.Initialize(File.DirAssets, "device/" & "onexblack.png")
+                Gloss.Initialize(File.DirAssets, "gloss/" & "onexblack.png")
+                IndexW = 113
+            Else If VariantBox.SelectedItem = "White" OR VariantBox.SelectedItem = "Pick a variant" Then
+                Device.Initialize(File.DirAssets, "device/" & "onexwhite.png")
+                Gloss.Initialize(File.DirAssets, "gloss/" & "onexwhite.png")
+                IndexW = 115
+            End If
+            Shadow.Initialize(File.DirAssets, "shadow/" & r7201280)
+            IndexH = 213
+    	Case "Samsung Galaxy SIII"
+            IndexW = 88
+            If VariantBox.SelectedItem = "Blue" OR VariantBox.SelectedItem = "Pick a variant" Then
+                Device.Initialize(File.DirAssets, "device/" & "gsiiiblue.png")
+                Gloss.Initialize(File.DirAssets, "gloss/" & "gsiiiblue.png")
+            Else If VariantBox.SelectedItem = "White" Then
+                Device.Initialize(File.DirAssets, "device/" & "gsiiiwhite.png")
+                Gloss.Initialize(File.DirAssets, "gloss/" & "gsiiiwhite.png")
+                IndexW = 84
+            Else If VariantBox.SelectedItem = "Black" Then
+                Device.Initialize(File.DirAssets, "device/" & "gsiiiblack.png")
+            Else If VariantBox.SelectedItem = "Red" Then
+                Device.Initialize(File.DirAssets, "device/" & "gsiiired.png")
+            Else If VariantBox.SelectedItem = "Brown" Then
+                Device.Initialize(File.DirAssets, "device/" & "gsiiibrown.png")
+            End If
+            Undershadow.Initialize(File.DirAssets, "undershadow/" & "gsiii.png")
+            Shadow.Initialize(File.DirAssets, "shadow/" & r7201280)
+            IndexH = 184
+        Case "Samsung Galaxy SIV"
+            If VariantBox.SelectedItem = "Blue" Then
+                Device.Initialize(File.DirAssets, "device/" & "gsivblue.png")
+                IndexW = 58
+            	IndexH = 218
+            	Shadow.Initialize(File.DirAssets, "shadow/" & r10801920)
+            Else If VariantBox.SelectedItem = "White" OR VariantBox.SelectedItem = "Pick a variant" Then
+                Device.Initialize(File.DirAssets, "device/" & "gsivwhite.png")
+                IndexW = 45
+            	IndexH = 159
+            	Shadow.Initialize(File.DirAssets, "shadow/" & r7201280)
+				If LoadedImage.IsInitialized Then LoadedImage = CreateScaledBitmap(LoadedImage, 720, 1280, True)
+            End If
+        Case "Motorola Xoom"
+            If VariantBox.SelectedItem = "Portrait" OR VariantBox.SelectedItem = "Pick a variant" Then
+                Device.Initialize(File.DirAssets, "device/" & "xoomport.png")
+                Shadow.Initialize(File.DirAssets, "shadow/" & r8001280)
+                Gloss.Initialize(File.DirAssets, "gloss/" & "xoomport.png")
+                Undershadow.Initialize(File.DirAssets, "undershadow/" & "xoomport.png")
+                IndexW = 199
+                IndexH = 200
+            Else If VariantBox.SelectedItem = "Landscape" Then
+                Device.Initialize(File.DirAssets, "device/" & "xoomland.png")
+                Shadow.Initialize(File.DirAssets, "shadow/" & r1280800)
+                Gloss.Initialize(File.DirAssets, "gloss/" & "xoomland.png")
+                Undershadow.Initialize(File.DirAssets, "undershadow/" & "xoomland.png")
+                IndexW = 218
+                IndexH = 191
+            End If
+        Case "Samsung Galaxy SII, Epic 4G Touch"
+            If VariantBox.SelectedItem = "Galaxy SII" OR VariantBox.SelectedItem = "Pick a variant" Then
+                Device.Initialize(File.DirAssets, "device/" & "gsii.png")
+                Gloss.Initialize(File.DirAssets, "gloss/" & "gsii.png")
+                Undershadow.Initialize(File.DirAssets, "undershadow/" & "gsii.png")
+            	IndexW = 132
+                IndexH = 191
+            Else If VariantBox.SelectedItem = "Epic 4G Touch" Then
+                Device.Initialize(File.DirAssets, "device/" & "epic4gtouch.png")
+                Gloss.Initialize(File.DirAssets, "gloss/" & "epic4gtouch.png")
+                Undershadow.Initialize(File.DirAssets, "undershadow/" & "epic4gtouch.png")
+            	IndexW = 132
+				IndexH = 175
+			Else If VariantBox.SelectedItem = "Galaxy SII (T-Mobile)" Then
+                Device.Initialize(File.DirAssets, "device/" & "gsiitmo.png")
+                Gloss.Initialize(File.DirAssets, "gloss/" & "gsiitmo.png")
+				IndexW = 61
+				IndexH = 145
+            End If
+            Shadow.Initialize(File.DirAssets, "shadow/" & r480800)
+        Case "Samsung Google Galaxy Nexus"
+            Device.Initialize(File.DirAssets, "device/" & "galaxynexus.png")
+            Shadow.Initialize(File.DirAssets, "shadow/" & r7201280)
+            Gloss.Initialize(File.DirAssets, "gloss/" & "galaxynexus.png")
+            Undershadow.Initialize(File.DirAssets, "undershadow/" & "galaxynexus.png")
+            IndexW = 155
+            IndexH = 263
+        Case "Samsung Galaxy Note II"
+            If VariantBox.SelectedItem = "Gray" Then
+                Device.Initialize(File.DirAssets, "device/" & "galaxynoteiigray.png")
+            Else If VariantBox.SelectedItem = "White" OR VariantBox.SelectedItem = "Pick a variant" Then
+                Device.Initialize(File.DirAssets, "device/" & "galaxynoteiiwhite.png")
+            End If
+            Shadow.Initialize(File.DirAssets, "shadow/" & r7201280)
+            IndexH = 163
+			IndexW = 77
+        Case "Motorola Droid RAZR"
+            Device.Initialize(File.DirAssets, "device/" & "droidrazr.png")
+            Shadow.Initialize(File.DirAssets, "shadow/" & r540960)
+            IndexW = 150
+            IndexH = 206
+        Case "Google Nexus 7"
+            If VariantBox.SelectedItem = "Portrait" OR VariantBox.SelectedItem = "Pick a variant" Then
+                Device.Initialize(File.DirAssets, "device/" & "nexus7port.png")
+                Shadow.Initialize(File.DirAssets, "shadow/" & r8001280)
+                Gloss.Initialize(File.DirAssets, "gloss/" & "nexus7port.png")
+                Undershadow.Initialize(File.DirAssets, "undershadow/" & "nexus7port.png")
+                IndexW = 264
+                IndexH = 311
+            Else If VariantBox.SelectedItem = "Landscape" Then
+                Device.Initialize(File.DirAssets, "device/" & "nexus7land.png")
+                Shadow.Initialize(File.DirAssets, "shadow/" & r1280800)
+                Gloss.Initialize(File.DirAssets, "gloss/" & "nexus7land.png")
+                IndexW = 315
+                IndexH = 270
+            End If
+        Case "HTC One S"
+            Device.Initialize(File.DirAssets, "device/" & "ones.png")
+            Shadow.Initialize(File.DirAssets, "shadow/" & r540960)
+            Gloss.Initialize(File.DirAssets, "gloss/" & "ones.png")
+            IndexW = 106
+            IndexH = 228
+        Case "HTC One V"
+            Device.Initialize(File.DirAssets, "device/" & "onev.png")
+            Shadow.Initialize(File.DirAssets, "shadow/" & r480800)
+            Gloss.Initialize(File.DirAssets, "gloss/" & "onev.png")
+            IndexW = 85
+            IndexH = 165
+        Case "Google Nexus S"
+            Device.Initialize(File.DirAssets, "device/" & "nexuss.png")
+            Shadow.Initialize(File.DirAssets, "shadow/" & r480800)
+            Gloss.Initialize(File.DirAssets, "gloss/" & "nexuss.png")
+            IndexW = 45
+            IndexH = 165
+        Case "Google Nexus 4"
+            Device.Initialize(File.DirAssets, "device/" & "nexus4.png")
+            Shadow.Initialize(File.DirAssets, "shadow/" & r7681280)
+            Gloss.Initialize(File.DirAssets, "gloss/" & "nexus4.png")
+            IndexW = 45
+            IndexH = 193
+        Case "Motorola Droid RAZR M"
+            Device.Initialize(File.DirAssets, "device/" & "droidrazrm.png")
+            Shadow.Initialize(File.DirAssets, "shadow/" & r540960)
+            IndexW = 49
+            IndexH = 129
+		Case "Samsung Galaxy Player 5.0"
+            Device.Initialize(File.DirAssets, "device/" & "galaxyplay5.png")
+            Shadow.Initialize(File.DirAssets, "shadow/" & r480800)
+            IndexW = 59
+            IndexH = 122
+		Case "HTC One"
+			If VariantBox.SelectedItem = "Black" Then
+            	Device.Initialize(File.DirAssets, "device/" & "oneblack.png")
+			Else If VariantBox.SelectedItem = "White" OR VariantBox.SelectedItem = "Pick a variant" Then
+            	Device.Initialize(File.DirAssets, "device/" & "onewhite.png")
+			End If
+            Gloss.Initialize(File.DirAssets, "gloss/" & "one.png")
+            Shadow.Initialize(File.DirAssets, "shadow/" & r10801920)
+			IndexW = 160
+			IndexH = 281
+    End Select
+	Dim R As Rect
+	R.Initialize(0, 0, Device.Width, Device.Height)
+	WorkingBitmap.InitializeMutable(Device.Width, Device.Height)
+	WorkingCanvas.Initialize2(WorkingBitmap)
+	Paint.Initialize()
+	If UnderShadowCheckbox.Checked = True AND UnderShadowCheckbox.Enabled = True Then ExtDraw.drawBitmap(WorkingCanvas, Undershadow, Null, R, Paint)
+	Dim r2 As Rect
+	r2.Initialize(IndexW, IndexH, IndexW + Shadow.Width, IndexH + Shadow.Height)
+	If LoadedImage.IsInitialized Then ExtDraw.drawBitmap(WorkingCanvas, LoadedImage, Null, r2, Paint)
+	If ShadowCheckbox.Checked = True AND ShadowCheckbox.Enabled = True Then ExtDraw.drawBitmap(WorkingCanvas, Shadow, Null, r2, Paint)
+	If Device.IsInitialized Then ExtDraw.drawBitmap(WorkingCanvas, Device, Null, R, Paint)
+	If GlossCheckbox.Checked = True AND GlossCheckbox.Enabled = True Then ExtDraw.drawBitmap(WorkingCanvas, Gloss, Null, R, Paint)
+	PreviewImage.Initialize3(ResizeImage(WorkingBitmap, Preview.Width, Preview.Height))
+	FinalBitmap.Initialize3(WorkingBitmap)
+	BackgroundThread.RunOnGuiThread("EndLoading", Null)
+End Sub
+
+Sub CreateScaledBitmap(Original As Bitmap, Width As Int, Height As Int, Filter As Boolean) As Bitmap
+   Dim r As Reflector
+   Dim b As Bitmap
+   b = r.RunStaticMethod("android.graphics.Bitmap", "createScaledBitmap", _
+      Array As Object(Original, Width, Height, Filter), _
+      Array As String("android.graphics.Bitmap", "java.lang.int", "java.lang.int", "java.lang.boolean"))
+   Return b
+End Sub
+
+Sub EndLoading
+	Loading.Visible = False
+	Preview.SetBackgroundImage(PreviewImage)
+	pager.PagingEnabled = True
+End Sub
+
+Sub ResizeImage(original As Bitmap, TargetX As Int, TargetY As Int) As Bitmap
+    Dim origRatio As Float = original.Width / original.Height
+    Dim targetRatio As Float = TargetX / TargetY
+    Dim scale As Float
+    If targetRatio > origRatio Then
+        scale = TargetY / original.Height
+    Else
+        scale = TargetX / original.Width
+    End If
+    Dim C As Canvas
+    Dim b As Bitmap
+    b.InitializeMutable(TargetX, TargetY)
+    C.Initialize2(b)
+    C.DrawColor(Colors.Transparent)
+    Dim R As Rect
+    Dim w = original.Width * scale, h = original.Height * scale As Int
+    R.Initialize(TargetX/2-w/2, TargetY/2-h/2, TargetX/2+w/2, TargetY/2+h/2)
+	Dim ExtDraw As ABExtDrawing
+	Dim paint As ABPaint
+	paint.Initialize()
+	paint.setFilterBitmap(True)
+	paint.SetAntiAlias(True)
+	ExtDraw.drawBitmap(C, original, Null, R, paint)
+	Return b
+End Sub
+
+Sub VariantBox_ItemClick (Position As Int, Value As Object)
+	If ModelBox.SelectedItem = "Samsung Galaxy SIII" Then
+		If (VariantBox.SelectedItem = "Black" OR VariantBox.SelectedItem = "Brown" OR VariantBox.SelectedItem = "Red") Then
+			GlossCheckbox.Enabled = False
+			GlossCheckbox.Checked = True
+		Else
+			If GlossCheckbox.Enabled = False Then
+				GlossCheckbox.Enabled = True
+				GlossCheckbox.Checked = False
+			End If
+		End If
+	Else If ModelBox.SelectedItem = "Samsung Galaxy SII, Epic 4G Touch" Then
+        If VariantBox.SelectedItem = "Galaxy SII (T-Mobile)" Then
+            UnderShadowCheckbox.Enabled = False
+            UnderShadowCheckbox.Checked = False
+        Else
+            UnderShadowCheckbox.Enabled = True
+        End If 
+	End If
+	If savephone = "True" Then savedvariant = VariantBox.SelectedItem
+	RefreshImage
+End Sub
+
+Sub activity_KeyPress (KeyCode As Int) As Boolean
+	If KeyCode = KeyCodes.KEYCODE_BACK Then
+		If (pager.CurrentPage = 1) = False AND pager.PagingEnabled = True Then
+			pager.GotoPage(1, True)
+			Return True
+		End If
+	End If
+End Sub
+
+Sub GlossCheckbox_CheckedChange(Checked As Boolean)
+	RefreshImage
+End Sub
+Sub ShadowCheckbox_CheckedChange(Checked As Boolean)
+	RefreshImage
+End Sub
+Sub UnderShadowCheckbox_CheckedChange(Checked As Boolean)
+	RefreshImage
+End Sub
+Sub ParseSavePhone As Boolean
+	If savephone = "False" Then Return False Else Return True
+End Sub
+Sub CreatePreferenceScreen
+    PrefScreen.Initialize("Scrotter", "")
+    'create two categories
+    Dim cat1, cat2 As AHPreferenceCategory
+    cat1.Initialize("Settings")
+    cat1.AddCheckBox("retaindevice", "Save Device", "Save current device as default", "Don't save current device as default", ParseSavePhone, "")
+	'cat1.AddList("theme", "Theme", "", "Dark", Null, themelist)
+    cat2.Initialize("About")
+	Dim Intent1, Intent2 As Intent
+	Intent1.Initialize(Intent1.ACTION_VIEW, "https://play.google.com/store/apps/details?id=com.yttrium.scrotter")
+	Intent2.Initialize(Intent2.ACTION_VIEW, "mailto:tyclief@gmail.com?subject=[Scrotter4Android] YourIssueHere&body=Please write your feedback here.")
+	cat2.AddIntent("Check for updates", "v" & version & " (" & releasedate & ")", Intent1, "")
+	cat2.AddIntent("Contact Us", "via email", Intent2, "")
+    'add the categories to the main screen
+    PrefScreen.AddPreferenceCategory(cat1)
+    PrefScreen.AddPreferenceCategory(cat2)
+End Sub
+Sub SettingsBtn_Click
+	StartActivity(PrefScreen.CreateIntent)
+End Sub
